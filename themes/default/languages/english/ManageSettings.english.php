@@ -131,6 +131,12 @@ $txt['cache_memcached'] = 'Memcached settings';
 $txt['cache_memcache'] = 'Memcache settings';
 $txt['cache_memcached_servers'] = '<br />Added servers:<ul class="bbc_list"><li>';
 $txt['cache_accelerator'] = 'Caching Accelerator';
+$txt['cache_redis']	= 'Redis settings';
+
+$txt['redis_ip']       = 'Redis Server IP';
+$txt['redis_port']     = 'Redis Server Port';
+$txt['redis_user']     = 'Redis Server Username';
+$txt['redis_password'] = 'Redis Server Password';
 
 $txt['loadavg_warning'] = '<span class="error">Please note: the settings below are to be edited with care. Setting any of them too low may render your forum <strong>unusable</strong>! The current load average is <strong>%01.2f</strong></span>';
 $txt['loadavg_enable'] = 'Enable load management by load averages';

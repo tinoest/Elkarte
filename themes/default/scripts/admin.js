@@ -913,7 +913,8 @@ $(function ()
 function toggleCache()
 {
 	var memcache = $('#cache_memcached').parent(),
-		cachedir = $('#cachedir').parent();
+		cachedir = $('#cachedir').parent(),
+		redis = $('#cache_redis').parent();
 
 	// Show the memcache server box only if memcache has been selected
 	if (cache_type.value.substr(0, 8) !== "memcache")
@@ -938,6 +939,19 @@ function toggleCache()
 		cachedir.slideUp(100);
 		cachedir.prev().slideUp(100);
 	}
+
+	// don't show the redis config if its not redis
+	if (cache_type.value === "redis")
+	{
+		redis.slideDown();
+		redis.prev().slideDown(100);
+	}
+	else
+	{
+		redis.slideUp(100);
+		redis.prev().slideUp(100);
+	}
+
 }
 
 /**
