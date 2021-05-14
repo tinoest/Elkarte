@@ -199,6 +199,7 @@ class File extends Db
 			'ssi_db_user',
 			'cache_accelerator',
 			'cache_memcached',
+			'cache_redis',
 			'url_format',
 		);
 

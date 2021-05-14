@@ -97,6 +97,7 @@ class Cache
 			$accelerator = 'filebased';
 		}
 
+
 		$this->_accelerator = $accelerator;
 
 		if ($level > 0)
@@ -191,7 +192,7 @@ class Cache
 	{
 		if (self::$_instance === null)
 		{
-			global $cache_accelerator, $cache_enable, $cache_memcached;
+			global $cache_accelerator, $cache_enable, $cache_memcached, $cache_redis;
 
 			$options = array();
 			if (substr($cache_accelerator, 0, 8) === 'memcache')
@@ -199,6 +200,10 @@ class Cache
 				$options = array(
 					'servers' => explode(',', $cache_memcached),
 				);
+			}
+			elseif (substr($cache_accelerator, 0, 5) === 'redis')
+			{
+				$options['servers'] = $cache_redis;
 			}
 
 			self::$_instance = new Cache($cache_enable, $cache_accelerator, $options);

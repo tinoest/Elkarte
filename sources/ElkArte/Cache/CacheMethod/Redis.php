@@ -24,22 +24,43 @@ class Redis extends AbstractCacheMethod
 	protected $title        = 'Redis-based caching';
 
 	/**
-	 * {@inheritdoc}
+	 * Creates a Redis instance representing the connection to the Redis server.
+	 *
+	 * @var \Redis
 	 */
-    protected $redisServer  = null;
+	protected $redisServer;
+
+	/**
+	 * If the daemon has valid servers in it pool
+	 *
+	 * @var bool
+	 */
+	protected $_is_running;
 
 	/**
 	 * {@inheritdoc}
 	 */
 	public function __construct($options)
 	{
+		if (empty($options['servers']))
+		{
+			$options['servers'] = array('');
+		}
+
 		parent::__construct($options);
 
-		if(!class_exists('Redis')) {
-            return false;
-        }
+		if ($this->isAvailable())
+		{
+			$this->redisServer = new \Redis();
+		}
+	}
 
-		return true;
+	/**
+	 * {@inheritdoc}
+	 */
+	public function isAvailable()
+	{
+		return class_exists('\\Redis');
 	}
 
 	/**
@@ -106,18 +127,6 @@ class Redis extends AbstractCacheMethod
 	/**
 	 * {@inheritdoc}
 	 */
-	public function isAvailable()
-	{
-		if( class_exists('Redis') ) {
-			return true;
-        }
-
-		return false;
-	}
-
-	/**
-	 * {@inheritdoc}
-	 */
 	public function details()
 	{
 		return array('title' => $this->title, 'version' => '1.0.0');
@@ -134,39 +143,21 @@ class Redis extends AbstractCacheMethod
 	{
 		global $txt;
 
-		$config_vars[] = array ('redis_ip', $txt['redis_ip'], 'string', 'text', 15, 'redis_ip', 'force_div_id' => 'redis_cache' );
-		$config_vars[] = array ('redis_port', $txt['redis_port'], 'string', 'text', 15, 'redis_port', 'force_div_id' => 'redis_cache' );
-		$config_vars[] = array ('redis_user', $txt['redis_user'], 'string', 'text', 15, 'redis_user', 'force_div_id' => 'redis_cache' );
-		$config_vars[] = array ('redis_password', $txt['redis_password'], 'string', 'text', 15, 'redis_password', 'force_div_id' => 'redis_cache' );
+		$config_vars[] = array ('cache_redis', $txt['cache_redis'], 'string', 'text', 15, 'redis_ip', 'force_div_id' => 'redis_cache', 'postinput' => $this->_options['servers'] );
 
 	}
 
     private function connect()
     {
-        global $modSettings;
-        
 		if(!class_exists('Redis')) {
             return false;
         }
 
-        foreach(array('redis_ip', 'redis_port', 'redis_user', 'redis_password') as $key) {
-            if(isset($modSettings[$key])) {
-                $$key   = $modSettings[$key];
-            }
-            else {
-                $$key   = '';
-            }
-        }
-
-        if(empty($redis_ip) || empty($redis_port)) {
-            return false;
-        }
-
-        $this->redisServer = new \Redis();
-
         if(!($this->redisServer instanceof \Redis)) {
             return false;
         }
+
+		list($redis_ip, $redis_port) = explode($this->_options['servers']);
 
         $this->redisServer->connect($redis_ip, $redis_port);
 
