@@ -14,14 +14,14 @@
 namespace ElkArte\Cache\CacheMethod;
 
 /**
- * Memcached and Memcache.
+ * Redis.
  */
 class Redis extends AbstractCacheMethod
 {
 	/**
 	 * {@inheritdoc}
 	 */
-	protected $title        = 'Redis-based caching';
+	protected $title		= 'Redis-based caching';
 
 	/**
 	 * Creates a Redis instance representing the connection to the Redis server.
@@ -76,16 +76,16 @@ class Redis extends AbstractCacheMethod
 	 */
 	public function put($key, $value, $ttl = 120)
 	{
-        $result = false;
+		$result = false;
 
 		if(!$this->_is_running) 
 			return $result;
 
 
-        if($this->redisServer instanceof \Redis)
+		if($this->redisServer instanceof \Redis)
 		{
-            $this->redisServer->setEx($key, $ttl, $value);
-        }
+			$this->redisServer->setEx($key, $ttl, $value);
+		}
 
 		return $result;
 	}
@@ -98,14 +98,14 @@ class Redis extends AbstractCacheMethod
 		if(!$this->_is_running) 
 			return '';
 
-        $value = '';
+		$value = '';
 
-        if($this->redisServer instanceof \Redis)
+		if($this->redisServer instanceof \Redis)
 		{
-            $value = $this->redisServer->get($key);
-        }
-     
-        return $value;
+			$value = $this->redisServer->get($key);
+		}
+	 
+		return $value;
 	}
 
 	/**
@@ -113,15 +113,15 @@ class Redis extends AbstractCacheMethod
 	 */
 	public function clean($type = '')
 	{
-        $result = false;
+		$result = false;
 		if(!$this->_is_running) 
 			return $result;
 
 
-        if($this->redisServer instanceof \Redis)
+		if($this->redisServer instanceof \Redis)
 		{
-            $result = $this->redisServer->flushDb();
-        }
+			$result = $this->redisServer->flushDb();
+		}
 
 		return $result;
 	}
@@ -152,17 +152,17 @@ class Redis extends AbstractCacheMethod
 
 	}
 
-    private function connect()
-    {
+	private function connect()
+	{
 		if(!class_exists('Redis'))
 		{
-            return false;
-        }
+			return false;
+		}
 
-        if(!($this->redisServer instanceof \Redis))
+		if(!($this->redisServer instanceof \Redis))
 		{
-            return false;
-        }
+			return false;
+		}
 
 		list($redis_ip, $redis_port) = explode(':', $this->_options['servers']);
 		
@@ -176,18 +176,18 @@ class Redis extends AbstractCacheMethod
 			return false;
 		}
 
-        $this->_is_running = $this->redisServer->connect($redis_ip, $redis_port);
+		$this->_is_running = $this->redisServer->connect($redis_ip, $redis_port);
 
-        if(!empty($redis_user) && !empty($redis_password)) {
-            $this->redisServer->auth($redis_user, $redis_password);
-        }
-        else if(!empty($redis_password)) {
-            $this->redisServer->auth($redis_password);
-        }
+		if(!empty($redis_user) && !empty($redis_password)) {
+			$this->redisServer->auth($redis_user, $redis_password);
+		}
+		else if(!empty($redis_password)) {
+			$this->redisServer->auth($redis_password);
+		}
 
-        $this->redisServer->select(0);
+		$this->redisServer->select(0);
 
-        return $this->_is_running;
-    }
+		return $this->_is_running;
+	}
 
 }
