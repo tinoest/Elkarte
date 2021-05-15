@@ -35,7 +35,7 @@ class Redis extends AbstractCacheMethod
 	 *
 	 * @var bool
 	 */
-	protected $_is_running;
+	protected $_is_running = false;
 
 	/**
 	 * {@inheritdoc}
@@ -44,7 +44,7 @@ class Redis extends AbstractCacheMethod
 	{
 		if (empty($options['servers']))
 		{
-			$options['servers'] = array('');
+			$options['servers'] = '';
 		}
 
 		parent::__construct($options);
@@ -52,6 +52,7 @@ class Redis extends AbstractCacheMethod
 		if ($this->isAvailable())
 		{
 			$this->redisServer = new \Redis();
+			$this->connect();
 		}
 	}
 
@@ -77,11 +78,12 @@ class Redis extends AbstractCacheMethod
 	{
         $result = false;
 
-        if(is_null($this->redisServer)) {
-            $this->connect();
-        }
+		if(!$this->_is_running) 
+			return $result;
 
-        if($this->redisServer instanceof \Redis) {
+
+        if($this->redisServer instanceof \Redis)
+		{
             $this->redisServer->setEx($key, $ttl, $value);
         }
 
@@ -93,13 +95,13 @@ class Redis extends AbstractCacheMethod
 	 */
 	public function get($key, $ttl = 120)
 	{
+		if(!$this->_is_running) 
+			return '';
+
         $value = '';
 
-        if(is_null($this->redisServer)) {
-            $this->connect();
-        }
-
-        if($this->redisServer instanceof \Redis) {
+        if($this->redisServer instanceof \Redis)
+		{
             $value = $this->redisServer->get($key);
         }
      
@@ -112,12 +114,12 @@ class Redis extends AbstractCacheMethod
 	public function clean($type = '')
 	{
         $result = false;
+		if(!$this->_is_running) 
+			return $result;
 
-        if(is_null($this->redisServer)) {
-            $this->connect();
-        }
 
-        if($this->redisServer instanceof \Redis) {
+        if($this->redisServer instanceof \Redis)
+		{
             $result = $this->redisServer->flushDb();
         }
 
@@ -141,25 +143,40 @@ class Redis extends AbstractCacheMethod
 	 */
 	public function settings(&$config_vars)
 	{
-		global $txt;
+		global $txt, $modSettings;
 
-		$config_vars[] = array ('cache_redis', $txt['cache_redis'], 'string', 'text', 15, 'redis_ip', 'force_div_id' => 'redis_cache', 'postinput' => $this->_options['servers'] );
+		// Should this really be here?
+		$modSettings['cache_redis'] = $this->_options['servers'];
+
+		$config_vars[] = array ('cache_redis', $txt['cache_redis'], 'string', 'text', 15, 'redis_ip', 'force_div_id' => 'redis_cache');
 
 	}
 
     private function connect()
     {
-		if(!class_exists('Redis')) {
+		if(!class_exists('Redis'))
+		{
             return false;
         }
 
-        if(!($this->redisServer instanceof \Redis)) {
+        if(!($this->redisServer instanceof \Redis))
+		{
             return false;
         }
 
-		list($redis_ip, $redis_port) = explode($this->_options['servers']);
+		list($redis_ip, $redis_port) = explode(':', $this->_options['servers']);
+		
+		if(empty($redis_ip))
+		{
+			return false;
+		}
 
-        $this->redisServer->connect($redis_ip, $redis_port);
+		if(empty($redis_port))
+		{
+			return false;
+		}
+
+        $this->_is_running = $this->redisServer->connect($redis_ip, $redis_port);
 
         if(!empty($redis_user) && !empty($redis_password)) {
             $this->redisServer->auth($redis_user, $redis_password);
@@ -170,7 +187,7 @@ class Redis extends AbstractCacheMethod
 
         $this->redisServer->select(0);
 
-        return true;
+        return $this->_is_running;
     }
 
 }

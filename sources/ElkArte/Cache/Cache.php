@@ -89,6 +89,7 @@ class Cache
 	 */
 	public function __construct($level, $accelerator, $options)
 	{
+
 		$this->setLevel($level);
 
 		// Default to file based so we can slow everything down :P
